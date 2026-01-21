@@ -1,0 +1,30 @@
+{
+    "name": "Trace 8.0.0-rc1",
+    "output_prefix": "trace-",
+    "package_version": "8.0.0-rc1",
+    "train": "stable",
+    "build_mode": "Release",
+    "nsis": {
+        "file": "install.nsi"
+    },
+    "sources": {
+        "trace": {
+            "ref": "tag/8.0.0-rc1"
+        },
+        "symbols": {
+            "ref": "branch/master"
+        },
+        "footprints": {
+            "ref": "branch/master"
+        },
+        "3dmodels": {
+            "ref": "branch/master"
+        },
+        "templates": {
+            "ref": "branch/master"
+        }
+    }, 
+    "vcpkg": {
+        "manifest_mode": true
+    }
+}

@@ -1,0 +1,74 @@
+== Readme
+This repo contains all the tooling to build and package Trace for releases.
+
+NOTE: Trace is a fork of KiCad, an open-source electronics design automation suite. This builder is adapted from the KiCad Windows builder.
+
+The builder is composed of PowerShell scripting that allows us to build native Windows logic to handle the build process
+and breaking it down to steps/functions that can be individually debugged.
+
+=== Prerequisites
+
+These are the requirements before the repository can be used.
+
+- Microsoft Visual Studio 2019 or newer (IDE or Build Tools)
+- Windows 10, Windows Sever 2019 or newer (PowerShell 5.1+ required)
+- "Git for Windows" client
+
+=== Building Trace
+
+`build.ps1` is the sole script that has various switches and args that break down the build process into
+multiple steps.
+
+==== Supported Architectures
+Currently the following architectures are officially supported:
+
+- x86
+- x64
+
+Stubbing is present for:
+
+- arm
+- arm64
+
+but they will not build due to dependency issues.
+
+==== Build Steps
+
+===== Initialize the builder
+This fetches any additional dependency tools we require for building that will be stored within the builder package structure
+
+`.\build.ps1 -Init`
+
+===== Build Vcpkg
+This initializes vcpkg if required and builds the latest required dependencies for Trace
+`.\build.ps1 -Vcpkg -Latest -Arch x64`
+
+===== Build Trace
+This builds the latest version of Trace master
+`.\build.ps1  -Build -Latest -Arch x64 -BuildType Release`
+
+===== Package Trace
+`.\build.ps1 -Package -Arch x64 -BuildConfigName ${params.BUILD_CONFIG} -Lite -Prepare $True`
+
+
+
+=== Extra Functions
+
+==== Symbols
+
+`symbols.ps1` provides management functionality of Trace's symbol storage. 
+This is intended for https://symbols.buildwithtrace.com and is simply a helper to invoke `symstore` and `agestore` to update symbols.
+
+It can be tested locally easily by placing a zip file containing pdbs into a new subfolder, in this example it will be called `.artifacts` as used
+by our jenkins process
+
+`.\symbols.ps1 -Publish -SourceZipPath \.artifacts\ -SymbolStore <localdiskpathtostorefiles>`
+
+== Credits
+This builder is based on the KiCad Windows builder, originally developed by:
+
+- Brian Sidebotham who started the win-builder in 2015
+- Nick Østergaard who maintained and expanded it while msys2 was used
+- Mark Roszko who transitioned the project to MSVC builds with enhanced scripting
+
+Trace Team has adapted this builder for the Trace project.
