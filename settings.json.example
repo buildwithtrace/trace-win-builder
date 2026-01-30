@@ -1,0 +1,9 @@
+{
+    "VcpkgPath": "",
+    "VcpkgPlatformToolset": "v143",
+    "VsVersionMin": "16.0",
+    "VsVersionMax": "17.99",
+    "SignSubjectName": "",
+    "UseMsvcCmake": true,
+    "SentryDsn": ""
+}

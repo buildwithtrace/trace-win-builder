@@ -43,8 +43,9 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Configuration - use script scope to ensure visibility in scriptblocks
-$script:TraceWinBuilderPath = "C:\Trace\trace-win-builder"
-$script:TraceSourcePath = "C:\Trace\Trace"
+# Paths are relative to script location for portability
+$script:TraceWinBuilderPath = $PSScriptRoot
+$script:TraceSourcePath = Join-Path (Split-Path -Parent $PSScriptRoot) "Trace"
 $script:Arch = "x64"
 $script:BuildType = "Release"
 $script:BuildConfigName = "trace-nightly"
