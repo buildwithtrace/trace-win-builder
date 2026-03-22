@@ -56,8 +56,8 @@
 !define MULTIUSER_INSTALLMODE_DEFAULT_ALLUSERS 1
 !define MULTIUSER_INSTALLMODE_64_BIT 1  ; it's ridiculous the plugin controls the program files view
 !define TRACE_MULTIUSER_INSTALLMODE_64_BIT_32BITVIEW 0 ; unsure the 32-bit hack is off
-!define MULTIUSER_INSTALLMODE_INSTDIR "Trace\${TRACE_VERSION}" ; the appended path we get installed to
-!define MULTIUSER_INSTALLMODE_UNINSTALL_REGISTRY_KEY "${PRODUCT_NAME} ${TRACE_VERSION}"
+!define MULTIUSER_INSTALLMODE_INSTDIR "Trace" ; fixed install path (no version) for in-place upgrades
+!define MULTIUSER_INSTALLMODE_UNINSTALL_REGISTRY_KEY "${PRODUCT_NAME}"
 !define MULTIUSER_INSTALLMODE_DISPLAYNAME "${PRODUCT_NAME} ${TRACE_VERSION}"
 !define PROGEXE "bin/trace.exe"     ; used by the plugin
 !define VERSION "${PACKAGE_VERSION}" ; used by the plugin
@@ -79,7 +79,7 @@
   !define TRACE_VERSION "unknown"
 !endif
 
-!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME} ${TRACE_VERSION}"
+!define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define UNINST_ROOT "SHCTX"
 
 ;Define libraries download urls
@@ -109,7 +109,7 @@ Name "${PRODUCT_NAME} ${PACKAGE_VERSION}"
 OutFile ${OUTFILE}
 
 ; Define a variable with start menu path for later use
-!define SMPATH "$SMPROGRAMS\Trace ${TRACE_VERSION}"
+!define SMPATH "$SMPROGRAMS\Trace"
 
 ShowInstDetails nevershow
 ShowUnInstDetails nevershow
@@ -528,10 +528,10 @@ Section $(TITLE_SEC_MAIN) SEC01
   SetOutPath "$INSTDIR\share\trace\scripting\python_packages"
   File /nonfatal /r "..\share\trace\scripting\python_packages\*"
 
-  ${RegisterApplication} "trace.exe" "$(APP_FRIENDLY_TRACE) ${TRACE_VERSION}"
-  ${RegisterApplication} "pcbnew.exe" "$(APP_FRIENDLY_PCBNEW) ${TRACE_VERSION}"
-  ${RegisterApplication} "eeschema.exe" "$(APP_FRIENDLY_EESCHEMA) ${TRACE_VERSION}"
-  ${RegisterApplication} "pl_editor.exe" "$(APP_FRIENDLY_PLEDITOR) ${TRACE_VERSION}"
+  ${RegisterApplication} "trace.exe" "$(APP_FRIENDLY_TRACE)"
+  ${RegisterApplication} "pcbnew.exe" "$(APP_FRIENDLY_PCBNEW)"
+  ${RegisterApplication} "eeschema.exe" "$(APP_FRIENDLY_EESCHEMA)"
+  ${RegisterApplication} "pl_editor.exe" "$(APP_FRIENDLY_PLEDITOR)"
 SectionEnd
 
 !macro RecursiveReadOnlyFlagFiles BasePath
@@ -670,15 +670,15 @@ Section $(TITLE_SEC_FILE_ASSOC) SEC07
   !insertmacro ExclusiveDetailPrint $(SETTING_FILE_ASSOCS)
   ; The strange negative numbers are the resource ids of the icons embedded into the exes, see resource.h in trace's source
   ; They are negative because of a Windows requirement where negative means "lookup the absolute value" in the exe's manifest
-  ${CreateFileAssociation} "kicad_pcb" "pcbnew.exe" "$(FILE_DESC_KICAD_PCB) ${TRACE_VERSION}" "-203"
-  ${CreateFileAssociation} "sch" "eeschema.exe" "$(FILE_DESC_SCH) ${TRACE_VERSION}" "-201"
-  ${CreateFileAssociation} "kicad_sch" "eeschema.exe" "$(FILE_DESC_SCH) ${TRACE_VERSION}" "-201"
-  ${CreateFileAssociation} "pro" "trace.exe" "$(FILE_DESC_PRO) ${TRACE_VERSION}" "-200"
-  ${CreateFileAssociation} "kicad_pro" "trace.exe" "$(FILE_DESC_PRO) ${TRACE_VERSION}" "-200"
-  ${CreateFileAssociation} "kicad_wks" "pl_editor.exe" "$(FILE_DESC_KICAD_WKS) ${TRACE_VERSION}" "-205"
+  ${CreateFileAssociation} "kicad_pcb" "pcbnew.exe" "$(FILE_DESC_KICAD_PCB)" "-203"
+  ${CreateFileAssociation} "sch" "eeschema.exe" "$(FILE_DESC_SCH)" "-201"
+  ${CreateFileAssociation} "kicad_sch" "eeschema.exe" "$(FILE_DESC_SCH)" "-201"
+  ${CreateFileAssociation} "pro" "trace.exe" "$(FILE_DESC_PRO)" "-200"
+  ${CreateFileAssociation} "kicad_pro" "trace.exe" "$(FILE_DESC_PRO)" "-200"
+  ${CreateFileAssociation} "kicad_wks" "pl_editor.exe" "$(FILE_DESC_KICAD_WKS)" "-205"
   ;not currently supported for opening
-  ;${CreateFileAssociation} "kicad_sym" "eeschema.exe" "$(FILE_DESC_SYM) ${TRACE_VERSION}" "-202"
-  ;${CreateFileAssociation} "kicad_mod" "pcbnew.exe" "$(FILE_DESC_FP) ${TRACE_VERSION}" "-204"
+  ;${CreateFileAssociation} "kicad_sym" "eeschema.exe" "$(FILE_DESC_SYM)" "-202"
+  ;${CreateFileAssociation} "kicad_mod" "pcbnew.exe" "$(FILE_DESC_FP)" "-204"
 SectionEnd
 
 Section $(TITLE_SEC_START_MENU) SEC08
@@ -687,9 +687,9 @@ Section $(TITLE_SEC_START_MENU) SEC08
 
   RMDir /r "${SMPATH}"
   CreateDirectory "${SMPATH}"
-  CreateShortCut "${SMPATH}\Trace ${TRACE_VERSION}.lnk" "$INSTDIR\bin\trace.exe"
+  CreateShortCut "${SMPATH}\Trace.lnk" "$INSTDIR\bin\trace.exe"
 
-  ShellLink::SetAppModelId "${SMPATH}\Trace ${TRACE_VERSION}.lnk" "Trace.Trace.trace.${TRACE_VERSION}"
+  ShellLink::SetAppModelId "${SMPATH}\Trace.lnk" "Trace.Trace.trace"
 
   CreateShortCut "${SMPATH}\$(SHORTCUT_NAME_EESCHEMA).lnk" "$INSTDIR\bin\eeschema.exe"
   CreateShortCut "${SMPATH}\$(SHORTCUT_NAME_PCBNEW).lnk" "$INSTDIR\bin\pcbnew.exe"
@@ -703,7 +703,7 @@ SectionEnd
 
 Section $(TITLE_SEC_DESKTOP_SHORTCUT) SEC09
   !insertmacro ExclusiveDetailPrint $(CREATING_SHORTCUTS)
-  CreateShortCut "$DESKTOP\Trace ${TRACE_VERSION}.lnk" "$INSTDIR\bin\trace.exe"
+  CreateShortCut "$DESKTOP\Trace.lnk" "$INSTDIR\bin\trace.exe"
 SectionEnd
 
 Section -CreateAddRemoveEntry
@@ -785,10 +785,65 @@ SectionEnd
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 
+; Silently remove old versioned installations that used per-version registry keys.
+; Old installers wrote to "Trace X.Y.Z" keys; new installers use just "Trace".
+Function RemoveOldVersionedInstalls
+  !define OLD_UNINST_BASE "Software\Microsoft\Windows\CurrentVersion\Uninstall"
+
+  ; Known shipped versions with per-version install paths
+  StrCpy $R9 "1.0.0"
+  Call _TryRemoveOldVersion
+  StrCpy $R9 "1.1.0"
+  Call _TryRemoveOldVersion
+  StrCpy $R9 "1.2.0"
+  Call _TryRemoveOldVersion
+FunctionEnd
+
+Function _TryRemoveOldVersion
+  ; $R9 = version string to check
+  ; Try HKLM first (per-machine), then HKCU (per-user)
+
+  ReadRegStr $R8 HKLM "${OLD_UNINST_BASE}\${PRODUCT_NAME} $R9" "UninstallString"
+  ${If} $R8 != ""
+    Call _RunOldUninstaller
+  ${EndIf}
+
+  ReadRegStr $R8 HKCU "${OLD_UNINST_BASE}\${PRODUCT_NAME} $R9" "UninstallString"
+  ${If} $R8 != ""
+    Call _RunOldUninstaller
+  ${EndIf}
+
+  ; Clean up stale versioned directories under Program Files
+  ${If} ${FileExists} "$PROGRAMFILES64\Trace\$R9\*.*"
+    RMDir /r "$PROGRAMFILES64\Trace\$R9"
+  ${EndIf}
+  ${If} ${FileExists} "$PROGRAMFILES\Trace\$R9\*.*"
+    RMDir /r "$PROGRAMFILES\Trace\$R9"
+  ${EndIf}
+  ${If} ${FileExists} "$LOCALAPPDATA\Programs\Trace\$R9\*.*"
+    RMDir /r "$LOCALAPPDATA\Programs\Trace\$R9"
+  ${EndIf}
+
+  ; Clean up stale versioned shortcuts
+  Delete "$DESKTOP\Trace $R9.lnk"
+  RMDir /r "$SMPROGRAMS\Trace $R9"
+FunctionEnd
+
+Function _RunOldUninstaller
+  ; $R8 = UninstallString from registry
+  ; Run the old uninstaller silently with /S (NSIS silent flag)
+  ; /uninstall tells our NsisMultiUser-based uninstaller to skip UI
+  nsExec::ExecToLog '"$R8" /S /uninstall'
+  Pop $R7
+FunctionEnd
+
+
 Function .onInit
 	${ifnot} ${UAC_IsInnerInstance}
     Call PreventMultiInstances
 	${endif}
+
+  Call RemoveOldVersionedInstalls
 
   !insertmacro MULTIUSER_INIT
 
@@ -986,7 +1041,7 @@ Section Uninstall
   ;remove start menu shortcuts and web page links
   !insertmacro ExclusiveDetailPrint $(REMOVING_SHORTCUTS)
   RMDir /r "${SMPATH}"
-  Delete "$DESKTOP\Trace ${TRACE_VERSION}.lnk"
+  Delete "$DESKTOP\Trace.lnk"
 
   ;remove all program files now
   !insertmacro ExclusiveDetailPrint $(REMOVING_APP)
@@ -1054,15 +1109,15 @@ Section Uninstall
   ${If} $UnCheckbox_RemoveAllSettings_State == 1
     ; Left until the very end because we want to change shell var context and delete the current user settings
     SetShellVarContext current
-    RMDir /r "$APPDATA\trace\${TRACE_VERSION}\"
-    RMDir /r "$LOCALAPPDATA\trace\${TRACE_VERSION}\"
+    RMDir /r "$APPDATA\trace\"
+    RMDir /r "$LOCALAPPDATA\trace\"
   ${EndIf}
 
   SetAutoClose true
 SectionEnd
 
 Function PreventMultiInstances
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-installer-${TRACE_VERSION}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-installer") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 +3
   MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST $(INSTALLER_RUNNING) /SD IDOK
@@ -1070,7 +1125,7 @@ Function PreventMultiInstances
 FunctionEnd
 
 Function un.PreventMultiInstances
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-installer-${TRACE_VERSION}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-installer") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 +3
   MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST $(UNINSTALLER_RUNNING) /SD IDOK
