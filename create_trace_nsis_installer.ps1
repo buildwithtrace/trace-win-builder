@@ -68,9 +68,9 @@ param(
 # Set strict error handling
 $ErrorActionPreference = "Stop"
 
-# Configuration - use script scope to ensure visibility in scriptblocks
-$script:TraceWinBuilderPath = $TraceWinBuilderPath
-$script:TraceSourcePath = $TraceSourcePath
+# Resolve to absolute paths so relative paths (e.g. ..\Trace) stay valid if cwd changes
+$script:TraceWinBuilderPath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($TraceWinBuilderPath)
+$script:TraceSourcePath = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($TraceSourcePath)
 $script:Arch = $Arch
 
 # Load .env file from trace-win-builder if it exists
