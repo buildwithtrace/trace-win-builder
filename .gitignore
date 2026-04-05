@@ -5,9 +5,6 @@
 /.support/
 /.kibuild/
 
-# User-specific configuration (use settings.json.example as template)
-settings.json
-
 # vcpkg (auto-cloned during build if not configured)
 /vcpkg/
 

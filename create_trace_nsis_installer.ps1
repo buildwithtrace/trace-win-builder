@@ -57,9 +57,8 @@ param(
 $ErrorActionPreference = "Stop"
 
 # Configuration - use script scope to ensure visibility in scriptblocks
-# Paths are relative to script location for portability
-$script:TraceWinBuilderPath = $PSScriptRoot
-$script:TraceSourcePath = Join-Path (Split-Path -Parent $PSScriptRoot) "Trace"
+$script:TraceWinBuilderPath = Join-Path $PSScriptRoot "trace-win-builder"
+$script:TraceSourcePath = Join-Path $PSScriptRoot "Trace"
 $script:Arch = $Arch
 
 # Load .env file from trace-win-builder if it exists
