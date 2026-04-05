@@ -1,4 +1,4 @@
-﻿;Additional text definitions for English
+;Additional text definitions for English
 
 ;File name of license file
 LicenseLangString MUILicense ${LANG_ENGLISH} "..\COPYRIGHT.txt"
@@ -122,6 +122,10 @@ LangString REMOVING_LIBRARIES ${LANG_ENGLISH} "Removing libraries..."
 LangString REMOVING_DOCS ${LANG_ENGLISH} "Removing documentation..."
 LangString REMOVING_ENV_VARS ${LANG_ENGLISH} "Removing environment variables..."
 LangString REMOVING_FILE_ASSOC ${LANG_ENGLISH} "Removing file associations..."
+
+LangString UNINST_PREV_VERSION_PROMPT ${LANG_ENGLISH} "A previous version of Trace ($R1) was found installed at:$\r$\n$R0$\r$\n$\r$\nIt will be uninstalled before continuing."
+LangString UNINST_PREV_VERSION_FAILED ${LANG_ENGLISH} "Failed to uninstall previous Trace version ($R1). You may need to remove it manually."
+LangString UNINST_PREV_VERSION_REMOVING ${LANG_ENGLISH} "Removing previous Trace version..."
 
 LangString UNINSTALL_OPTIONS_TITLE ${LANG_ENGLISH} "Uninstall Options"
 LangString UNINSTALL_OPTIONS_SUBTITLE ${LANG_ENGLISH} "Additional options for a uninstall"

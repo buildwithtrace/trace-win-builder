@@ -1,4 +1,4 @@
-﻿;Additional text definitions for Chinese
+;Additional text definitions for Chinese
 
 ;File name of license file
 LicenseLangString MUILicense ${LANG_SIMPCHINESE} "..\COPYRIGHT.txt"
@@ -121,6 +121,10 @@ LangString REMOVING_DOCS ${LANG_SIMPCHINESE} "正在删除文档..."
 LangString REMOVING_ENV_VARS ${LANG_SIMPCHINESE} "正在删除环境变量..."
 LangString REMOVING_FILE_ASSOC ${LANG_SIMPCHINESE} "正在删除文件关联..."
 
+
+LangString UNINST_PREV_VERSION_PROMPT ${LANG_SIMPCHINESE} "A previous version of Trace ($R1) was found installed at:$\r$\n$R0$\r$\n$\r$\nIt will be uninstalled before continuing."
+LangString UNINST_PREV_VERSION_FAILED ${LANG_SIMPCHINESE} "Failed to uninstall previous Trace version ($R1). You may need to remove it manually."
+LangString UNINST_PREV_VERSION_REMOVING ${LANG_SIMPCHINESE} "Removing previous Trace version..."
 
 LangString UNINSTALL_OPTIONS_TITLE ${LANG_SIMPCHINESE} "卸载选项"
 LangString UNINSTALL_OPTIONS_SUBTITLE ${LANG_SIMPCHINESE} "卸载的其他选项"

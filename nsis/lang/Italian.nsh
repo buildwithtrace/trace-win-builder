@@ -1,4 +1,4 @@
-﻿;Additional text definitions for Italian
+;Additional text definitions for Italian
 
 ;File name of license file
 LicenseLangString MUILicense ${LANG_ITALIAN} "..\COPYRIGHT.txt"
@@ -120,6 +120,10 @@ LangString REMOVING_LIBRARIES ${LANG_ITALIAN} "Removing libraries..."
 LangString REMOVING_DOCS ${LANG_ITALIAN} "Removing documentation..."
 LangString REMOVING_ENV_VARS ${LANG_ITALIAN} "Removing environment variables..."
 LangString REMOVING_FILE_ASSOC ${LANG_ITALIAN} "Removing file associations..."
+
+LangString UNINST_PREV_VERSION_PROMPT ${LANG_ITALIAN} "A previous version of Trace ($R1) was found installed at:$\r$\n$R0$\r$\n$\r$\nIt will be uninstalled before continuing."
+LangString UNINST_PREV_VERSION_FAILED ${LANG_ITALIAN} "Failed to uninstall previous Trace version ($R1). You may need to remove it manually."
+LangString UNINST_PREV_VERSION_REMOVING ${LANG_ITALIAN} "Removing previous Trace version..."
 
 LangString UNINSTALL_OPTIONS_TITLE ${LANG_ITALIAN} "Uninstall Options"
 LangString UNINSTALL_OPTIONS_SUBTITLE ${LANG_ITALIAN} "Additional options for a uninstall"

@@ -292,6 +292,106 @@ FunctionEnd
 	SetDetailsPrint none
 !macroend
 
+!macroend
+
+; Macro to uninstall previous Trace versions before installing the new one.
+; Enumerates the Windows Uninstall registry hive under both HKLM and HKCU,
+; finds any existing Trace installations with a different version, and runs
+; their uninstallers silently so users end up with a single clean installation.
+!macro UninstallPreviousTraceVersions un
+  Push $R0 ; install location
+  Push $R1 ; version string extracted from subkey
+  Push $R2 ; subkey name (temp)
+  Push $R3 ; prefix check ("Trace " = 6 chars)
+  Push $R4 ; enum index
+  Push $R5 ; current registry root (HKLM or HKCU)
+
+  StrCpy $R5 "HKLM"
+  Goto ${un}__upv_start_enum
+
+${un}__upv_switch_to_hkcu:
+  StrCpy $R5 "HKCU"
+
+${un}__upv_start_enum:
+  StrCpy $R4 0
+
+${un}__upv_enum_loop:
+  ${If} $R5 == "HKLM"
+    EnumRegKey $R2 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall" $R4
+  ${Else}
+    EnumRegKey $R2 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall" $R4
+  ${EndIf}
+
+  StrCmp $R2 "" ${un}__upv_enum_done
+
+  IntOp $R4 $R4 + 1
+
+  ; Check if this key starts with "Trace " (6 characters)
+  StrCpy $R3 $R2 6
+  StrCmp $R3 "Trace " 0 ${un}__upv_enum_loop
+
+  ; Skip the current version -- NsisMultiUser handles same-version reinstall
+  StrCmp $R2 "${PRODUCT_NAME} ${TRACE_VERSION}" ${un}__upv_enum_loop
+
+  ; Extract the version portion (everything after "Trace ")
+  StrCpy $R1 $R2 "" 6
+
+  ; Read InstallLocation
+  ${If} $R5 == "HKLM"
+    ReadRegStr $R0 HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\$R2" "InstallLocation"
+  ${Else}
+    ReadRegStr $R0 HKCU "Software\Microsoft\Windows\CurrentVersion\Uninstall\$R2" "InstallLocation"
+  ${EndIf}
+
+  ; Need InstallLocation to locate the uninstaller exe
+  StrCmp $R0 "" ${un}__upv_enum_loop
+
+  ; Verify the uninstaller exists on disk
+  ${IfNot} ${FileExists} "$R0\${UNINSTALL_FILENAME}"
+    Goto ${un}__upv_enum_loop
+  ${EndIf}
+
+  ; In interactive mode, inform the user about the removal
+  ${IfNot} ${Silent}
+    MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST $(UNINST_PREV_VERSION_PROMPT) /SD IDOK
+  ${EndIf}
+
+  ; Run the old uninstaller.
+  ; Use ExecShellWait (not ExecWait) because ExecWait silently fails when
+  ; the child process requires UAC elevation (see NsisMultiUser.nsh line 558).
+  ; _?= prevents the uninstaller from copying itself to temp, which is the
+  ; only way ExecShellWait can actually wait for it to finish.
+  ; Derive the mode flag from which hive we found the install in.
+  ${If} $R5 == "HKLM"
+    ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /allusers _?=$R0"
+  ${Else}
+    ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /currentuser _?=$R0"
+  ${EndIf}
+
+  ; ExecShellWait doesn't return exit codes; if the uninstaller fails, we rely
+  ; on leftover-directory cleanup below as the fallback.
+
+  ; Clean up leftover install directory if the old uninstaller left it behind
+  ${If} ${FileExists} "$R0\*.*"
+    RMDir /r "$R0"
+  ${EndIf}
+
+  ; Registry changed after uninstall -- restart enumeration from 0
+  StrCpy $R4 0
+  Goto ${un}__upv_enum_loop
+
+${un}__upv_enum_done:
+  ; If we just finished HKLM, now do HKCU
+  StrCmp $R5 "HKLM" ${un}__upv_switch_to_hkcu
+
+  Pop $R5
+  Pop $R4
+  Pop $R3
+  Pop $R2
+  Pop $R1
+  Pop $R0
+!macroend
+
 Function onDirectoryPageShow
 	${if} $CmdLineDir != ""
 		${orif} $HasCurrentModeInstallation = 1
@@ -707,6 +807,9 @@ Function .onInit
       Quit
   ${EndIf}
   !endif
+
+  ; Uninstall any previous Trace versions before continuing
+  !insertmacro UninstallPreviousTraceVersions ""
 
   !ifdef LIBRARIES_TAG
   StrCpy $DELETE_DOWNLOADED_FILES "unknown"
