@@ -18,6 +18,12 @@
 .PARAMETER Diagnostic
     Creates a diagnostic installer with release performance and debug logging enabled.
 
+.PARAMETER TraceWinBuilderPath
+    Path to the trace-win-builder directory. Defaults to <ScriptRoot>\trace-win-builder.
+
+.PARAMETER TraceSourcePath
+    Path to the Trace source directory. Defaults to <ScriptRoot>\Trace.
+
 .EXAMPLE
     .\create_trace_nsis_installer.ps1 -Rebuild -Lite
     Cleans build directories, rebuilds, and creates a lite installer.
@@ -50,15 +56,21 @@ param(
 
     [Parameter(Mandatory=$false)]
     [ValidateSet("x64", "arm64")]
-    [string]$Arch = "x64"
+    [string]$Arch = "x64",
+
+    [Parameter(Mandatory=$false)]
+    [string]$TraceWinBuilderPath = (Join-Path $PSScriptRoot "trace-win-builder"),
+
+    [Parameter(Mandatory=$false)]
+    [string]$TraceSourcePath = (Join-Path $PSScriptRoot "Trace")
 )
 
 # Set strict error handling
 $ErrorActionPreference = "Stop"
 
 # Configuration - use script scope to ensure visibility in scriptblocks
-$script:TraceWinBuilderPath = Join-Path $PSScriptRoot "trace-win-builder"
-$script:TraceSourcePath = Join-Path $PSScriptRoot "Trace"
+$script:TraceWinBuilderPath = $TraceWinBuilderPath
+$script:TraceSourcePath = $TraceSourcePath
 $script:Arch = $Arch
 
 # Load .env file from trace-win-builder if it exists
