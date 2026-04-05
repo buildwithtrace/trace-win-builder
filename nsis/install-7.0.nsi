@@ -41,7 +41,7 @@
 ; General Product Description Definitions
 !define PRODUCT_NAME "Trace"
 !define TRACE_MAIN_SITE "buildwithtrace.com/"
-!define COMPANY_NAME "Trace"
+!define COMPANY_NAME "WishEDA, Inc (Trace)"
 !define TRADE_MARKS ""
 !define COPYRIGHT "Trace Developers Team"
 !define COMMENTS "AI-Powered PCB Design"

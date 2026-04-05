@@ -1,8 +1,8 @@
 {
     "name": "Trace Nightly",
     "output_prefix": "trace-nightly-",
-    "package_version": "1.0.0",
-    "train": "nightly",
+    "package_version": "1.2.0",
+    "train": "stable",
     "build_mode": "Release",
     "nsis": {
         "file": "install.nsi"

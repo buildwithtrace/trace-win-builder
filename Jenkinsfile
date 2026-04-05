@@ -28,20 +28,22 @@ def do_init(list) {
 def do_build(arches) {
     pwsh "Get-ChildItem .out -Exclude '*-pdb' | Remove-Item -Recurse -ErrorAction SilentlyContinue"
     
-    arches.each { arch ->
-      echo "Doing build for ${arch} ${build_type}"
-      try {
-        if(params.TRAIN != 'nightly') {
-          pwsh ".\\build.ps1 -Build -Arch ${arch} -BuildConfigName ${params.BUILD_CONFIG}"
+    withCredentials([string(credentialsId: 'trace-amplitude-key', variable: 'AMPLITUDE_API_KEY')]) {
+      arches.each { arch ->
+        echo "Doing build for ${arch} ${build_type}"
+        try {
+          if(params.TRAIN != 'nightly') {
+            pwsh ".\\build.ps1 -Build -Arch ${arch} -BuildConfigName ${params.BUILD_CONFIG}"
+          }
+          else {
+            pwsh ".\\build.ps1 -Build -Latest -Arch ${arch} -BuildType ${build_type}"
+          }
+          archs_to_pack.add( arch )
+        } catch (err) {
+          currentBuild.result='UNSTABLE'
+          echo 'Exception occurred: ' + err.toString()
+          echo "Failed build for ${arch} ${build_type}"
         }
-        else {
-          pwsh ".\\build.ps1 -Build -Latest -Arch ${arch} -BuildType ${build_type}"
-        }
-        archs_to_pack.add( arch )
-      } catch (err) {
-        currentBuild.result='UNSTABLE'
-        echo 'Exception occurred: ' + err.toString()
-        echo "Failed build for ${arch} ${build_type}"
       }
     }
     

@@ -1,0 +1,33 @@
+{
+    "name": "Trace Diagnostic",
+    "output_prefix": "trace-diagnostic-",
+    "package_version": "1.2.0",
+    "train": "stable",
+    "build_mode": "RelWithDebInfo",
+    "nsis": {
+        "file": "install.nsi"
+    },
+    "sources": {
+        "trace": {
+            "ref": "local"
+        },
+        "symbols": {
+            "ref": "branch/master"
+        },
+        "footprints": {
+            "ref": "branch/master"
+        },
+        "3dmodels": {
+            "ref": "branch/master"
+        },
+        "templates": {
+            "ref": "branch/master"
+        }
+    },
+    "vcpkg": {
+        "manifest_mode": true
+    },
+    "cmake_extra_args": [
+        "-DKICAD_DIAGNOSTIC_LOGGING=ON"
+    ]
+}

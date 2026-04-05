@@ -103,7 +103,7 @@ param(
     [Parameter(Mandatory=$False, ParameterSetName="build")]
     [Parameter(Mandatory=$False, ParameterSetName="package")]
     [Parameter(Mandatory=$False, ParameterSetName="preparepackage")]
-    [ValidateSet('Release', 'Debug')]
+    [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
     [string]$BuildType = 'Release',
 
     [Parameter(Mandatory=$False, ParameterSetName="package")]
@@ -172,11 +172,12 @@ Import-Module $PSScriptRoot\KiBuild -Force -DisableNameChecking
 ## Base setup
 ###
 
-$vcpkgCommit = "ef7dbf94b9198bc58f45951adcf1f041fcbc5ea0";
+$vcpkgCommit = "66c0373dc7fca549e5803087b9487edfe3aca0a1";  # January 2026
 
-$cmakeFolder = 'cmake-3.30.1-windows-x86_64'
-$cmakeDownload = 'https://github.com/Kitware/CMake/releases/download/v3.30.1/cmake-3.30.1-windows-x86_64.zip'
-$cmakeChecksum = "CF7788FF9D92812DA194847D4EC874FC576F34079987D0F20C96CD09E2A16220"
+$cmakeVersion = '3.31.10'
+$cmakeFolder = "cmake-$cmakeVersion-windows-x86_64"
+$cmakeDownload = "https://github.com/Kitware/CMake/releases/download/v$cmakeVersion/cmake-$cmakeVersion-windows-x86_64.zip"
+$cmakeChecksum = "13D1A463D7130DF5339BAEDD63D8AE990AAF385062B2F42F372796143AE94086"
 
 $ninjaFolder = 'ninja-win'
 $ninjaDownload = 'https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-win.zip'
@@ -189,10 +190,10 @@ $swigwinFolder = "swigwin-4.3.1"
 $swigwinDownload = "https://sourceforge.net/projects/swig/files/swigwin/$swigwinFolder/$swigwinFolder.zip/download?use_mirror=pilotfiber"
 $swigwinChecksum = "7EA5197C557AF20B2F7780FFCFE803BBE0E2009F5846874112AEA37E5F693417"
 
-$nsisVersion = "3.10"
+$nsisVersion = "3.11"
 $nsisFolderName = "nsis-$nsisVersion"
 $nsisDownload = "https://sourceforge.net/projects/nsis/files/NSIS%203/$nsisVersion/$nsisFolderName.zip/download"
-$nsisChecksum = "FCDCE3229717A2A148E7CDA0AB5BDB667F39D8FB33EDE1DA8DABC336BD5AD110"
+$nsisChecksum = "C7D27F780DDB6CFFB4730138CD1591E841F4B7EDB155856901CDF5F214394FA1"
 
 $gettextFolderName = "gettext0.21-iconv1.16-static-64"
 $gettextDownload = "https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.21-v1.16/gettext0.21-iconv1.16-static-64.zip"
@@ -213,7 +214,13 @@ $azureSignToolDownload = 'https://github.com/vcsjones/AzureSignTool/releases/dow
 $azureSignToolChecksum = '012001BB072EE36719AECC570D4566C6407A49AE6E6E85DB8201F58122BCA967'
 
 
-$7zaFolderName = "7z2409-extra"
+$7zaFolderName = "7z2501-extra"
+$7zaArchiveName = "$7zaFolderName.zip"
+
+$pythonEmbedVersion = "3.13.2"
+$pythonEmbedAmd64FolderName = "python-$pythonEmbedVersion-embed-amd64"
+$pythonEmbedAmd64Download = "https://www.python.org/ftp/python/$pythonEmbedVersion/python-$pythonEmbedVersion-embeddable-amd64.zip"
+$pythonEmbedAmd64Checksum = "5E47BD2733E351C337463976C9B36764C790FB28C6E5ADF0984D451D3AFFD737"
 
 Init-Paths $PSScriptRoot
 $BuilderPaths = Get-BuilderPaths
@@ -224,6 +231,10 @@ $doxygenPath = Join-Path -Path $BuilderPaths.SupportRoot -ChildPath $doxygenFold
 $nsisPath = Join-Path -Path (Join-Path -Path $BuilderPaths.SupportRoot -ChildPath $nsisFolderName) -ChildPath "bin/"
 
 $env:Path = $swigWinPath+";"+$gettextPath+";"+$nsisPath+";"+$doxygenPath+";"+$env:PATH
+
+# Set gettext executable paths for CMake FindGettext module
+$env:GETTEXT_MSGMERGE_EXECUTABLE = Join-Path -Path $gettextPath -ChildPath "msgmerge.exe"
+$env:GETTEXT_MSGFMT_EXECUTABLE = Join-Path -Path $gettextPath -ChildPath "msgfmt.exe"
 
 
 # Use TLS1.2 by force in case of older powershell
@@ -243,7 +254,7 @@ $settingDefault = @{
     VcpkgPlatformToolset = 'v142'
     VsVersionMin = '16.0'
     VsVersionMax = '17.99'
-    SignSubjectName = 'Trace Services Corporation'
+    SignSubjectName = 'WishEDA, Inc (Trace)'
     UseMsvcCmake = $True
     SentryDsn = ''
 }
@@ -394,7 +405,7 @@ function Build-Library-Source {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = 'Release',
         [string]$libraryFolderName
     )
@@ -436,7 +447,7 @@ function Install-Library {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = 'Release',
         [string]$libraryFolderName
     )
@@ -470,7 +481,7 @@ function Install-Trace {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = 'Release',
         [Parameter(Mandatory=$False)]
         [string]$installPath = ''
@@ -513,7 +524,7 @@ function Build-Trace {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = 'Release',
         [Parameter(Mandatory=$False)]
         [bool]$fresh = $False
@@ -523,6 +534,14 @@ function Build-Trace {
 
     #step down into trace folder
     Push-Location (Get-Source-Path trace)
+
+    # Clear VS environment if it's configured for wrong architecture
+    # This ensures we get the correct compiler for the target architecture
+    $msvcArch = Get-MSVCArch -Arch $arch
+    if($env:VSCMD_VER -and $env:VSCMD_ARG_TGT_ARCH -and $env:VSCMD_ARG_TGT_ARCH -ne $msvcArch) {
+        Write-Host "VS Environment configured for $($env:VSCMD_ARG_TGT_ARCH), need $msvcArch. Clearing..." -ForegroundColor Yellow
+        $env:VSCMD_VER = $null
+    }
 
     Set-MSVCEnvironment -Arch $arch -VersionMin $settings.VsVersionMin -VersionMax $settings.VsVersionMax
 
@@ -545,6 +564,7 @@ function Build-Trace {
     Write-Host "Configured install directory: $installPath"
     Write-Host "Vcpkg Path: $toolchainPath"
 
+    $triplet = Get-Vcpkg-Triplet -Arch $arch
     $cmakeArgs = @(
         '-G',
         $generator,
@@ -557,14 +577,20 @@ function Build-Trace {
         "-DCMAKE_INSTALL_PREFIX=$installPath",
         "-DCMAKE_PDB_OUTPUT_DIRECTORY=$installPdbPath",
         "-DCMAKE_MAKE_PROGRAM=$env:NINJA_PATH",
+        "-DVCPKG_TARGET_TRIPLET=$triplet",
         '-DKICAD_BUILD_QA_TESTS=OFF',
         '-DKICAD_BUILD_I18N=ON',
-        '-DKICAD_WIN32_DPI_AWARE=ON'
+        '-DKICAD_WIN32_DPI_AWARE=ON',
+        "-DVCPKG_OVERLAY_PORTS=$(Get-Location)/vcpkg-overlay-ports"
     )
 
     if( $settings.SentryDsn -ne "" ) {
         $cmakeArgs += '-DKICAD_USE_SENTRY=ON';
         $cmakeArgs += "-DKICAD_SENTRY_DSN=$($settings.SentryDsn)";
+    }
+
+    if( $env:AMPLITUDE_API_KEY -ne $null -and $env:AMPLITUDE_API_KEY -ne "" ) {
+        $cmakeArgs += "-DAMPLITUDE_API_KEY=$($env:AMPLITUDE_API_KEY)";
     }
 
     if( $arch -ne [Arch]::arm64 ) {
@@ -587,6 +613,14 @@ function Build-Trace {
 
     $cmakeArgs += '-S';
     $cmakeArgs += '.';
+
+    # Add extra cmake args from build config
+    if( $buildConfig.cmake_extra_args ) {
+        foreach( $arg in $buildConfig.cmake_extra_args ) {
+            $cmakeArgs += $arg
+        }
+    }
+
     # ignore cmake dumping to stderr
     # the boost warnings will cause it to treat it as a failed command
     & cmake $cmakeArgs  2>&1
@@ -598,13 +632,15 @@ function Build-Trace {
     } else {
         Write-Host "Invoking cmake build" -ForegroundColor Yellow
 
-        & {
-            $ErrorActionPreference = 'SilentlyContinue'
-            cmake --build $cmakeBuildFolder -j 2>&1 | % ToString
-        }
+        # Run cmake build and capture exit code properly
+        # Note: We run this directly (not in a script block) to preserve $LastExitCode
+        $ErrorActionPreference = 'SilentlyContinue'
+        cmake --build $cmakeBuildFolder -j 2>&1 | % ToString
+        $buildExitCode = $LastExitCode
+        $ErrorActionPreference = 'Stop'
 
-        if ($LastExitCode -ne 0) {
-            Write-Error "Failure with cmake build"
+        if ($buildExitCode -ne 0) {
+            Write-Error "Failure with cmake build (exit code: $buildExitCode)"
             Pop-Location
             Exit [ExitCodes]::CMakeBuildFailure
         } else {
@@ -643,7 +679,7 @@ function Start-Build {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = 'Release',
         [Parameter(Mandatory=$False)]
         [bool]$latest = $False
@@ -755,10 +791,18 @@ function Start-Init {
              -ZipRelocate $False `
              -ExtractInSupportRoot $False
 
-    $7zaSource = Join-Path -Path $PSScriptRoot -ChildPath "\support\7z2409-extra.zip"
+    $7zaSource = Join-Path -Path $PSScriptRoot -ChildPath "\support\$7zaArchiveName"
     Expand-Tool -ToolName "7za" `
              -SourcePath $7zaSource `
              -DestPath (Join-Path -Path $BuilderPaths.SupportRoot -ChildPath "$7zaFolderName/")
+
+    Get-Tool -ToolName "Python Embedded (amd64)" `
+             -Url $pythonEmbedAmd64Download `
+             -DestPath (Join-Path -Path $BuilderPaths.SupportRoot -ChildPath $pythonEmbedAmd64FolderName) `
+             -DownloadPath (Join-Path -Path $BuilderPaths.DownloadsRoot -ChildPath "python-embed-amd64.zip") `
+             -Checksum $pythonEmbedAmd64Checksum `
+             -ExtractZip $true `
+             -ExtractInSupportRoot $False
 
     # Restore progress bar
     $ProgressPreference = 'Continue'
@@ -782,7 +826,7 @@ function Get-Build-Name {
         [Parameter(Mandatory=$True)]
         [Arch]$Arch,
         [Parameter(Mandatory=$True)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$BuildType
     )
 
@@ -891,10 +935,11 @@ function Get-Trace-CommitHash {
 }
 
 function Get-Trace-PackageVersion {
-
+    # For stable builds, use the version from TraceVersion.cmake to keep installer
+    # and app versions in sync automatically
     if( $buildConfig.train -eq "stable" )
     {
-        return $buildConfig.package_version
+        return Get-Trace-Version
     }
     else
     {
@@ -974,7 +1019,7 @@ function Start-Prepare-Package {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = "Release",
         [Parameter(Mandatory=$False)]
         [bool]$includeVcpkgDebugSymbols = $False,
@@ -1144,6 +1189,17 @@ function Start-Prepare-Package {
 
     ### lets setup pip
     $hostArch = Get-HostArch
+    $originalEnvPath = $env:Path
+    $env:PYTHONUTF8 = 1
+
+    # Cross-compilation support for arm64
+    $hostPython3Path = $null
+    if( $hostArch -ne $arch ) {
+        $hostPython3Path = Join-Path -Path $BuilderPaths.SupportRoot -ChildPath $pythonEmbedAmd64FolderName
+        Write-Host "Cross-compiling for ${arch}: using $hostArch embedded Python from $hostPython3Path" -ForegroundColor Yellow
+        $env:Path = $hostPython3Path + ";" + $env:Path
+    }
+
     if( $arch -eq $hostArch ) {
         # we can't run this if the python.exe compiled isn't the same arch
         Write-Host "Ensuring pip is bundled and installed"
@@ -1178,6 +1234,10 @@ function Start-Prepare-Package {
 
     ### patch python manifest
     Patch-Python-Manifest -PythonRoot $destBin
+
+    # Restore environment after Python operations
+    $env:Path = $originalEnvPath
+    $env:PYTHONUTF8 = $null
 
     ## now libxslt
     $xsltprocSource = "$vcpkgInstalledRootPrimary\tools\libxslt\xsltproc.exe"
@@ -1234,7 +1294,7 @@ function Start-Package-Nsis {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = "Release",
         [Parameter(Mandatory=$False)]
         [bool]$includeVcpkgDebugSymbols = $False,
@@ -1379,7 +1439,7 @@ function Start-Package-Pdb() {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = "Release"
     )
 
@@ -1405,10 +1465,10 @@ function Start-Package-Pdb() {
     }
 
     $vcpkgPdbSource = Join-Path -Path (Get-Source-Path trace) -ChildPath "build/$buildName/vcpkg_installed/$triplet/"
-    if($buildType -eq 'Release') {
-        $vcpkgPdbSource = Join-Path -Path $vcpkgPdbSource -ChildPath "bin";
-    } else {
+    if($buildType -eq 'Debug') {
         $vcpkgPdbSource = Join-Path -Path $vcpkgPdbSource -ChildPath "debug/bin";
+    } else {
+        $vcpkgPdbSource = Join-Path -Path $vcpkgPdbSource -ChildPath "bin";
     }
 
     $vcpkgPdbOutFileName = "$($buildConfig.output_prefix)$packageVersion-$nsisArch-vcpkg-pdbs.zip"
@@ -1463,7 +1523,7 @@ function Start-Package-Msix {
         [Parameter(Mandatory=$True)]
         [Arch]$arch,
         [Parameter(Mandatory=$False)]
-        [ValidateSet('Release', 'Debug')]
+        [ValidateSet('Release', 'Debug', 'RelWithDebInfo')]
         [string]$buildType = "Release",
         [Parameter(Mandatory=$False)]
         [bool]$includeVcpkgDebugSymbols = $False,
@@ -1520,7 +1580,7 @@ function Start-Package-Msix {
                         -Arch "x64" `
                         -IdentityPublisher "CN=069DD09B-C97F-4C04-9248-7A7FA0D53E48" `
                         -IdentityName "Trace.Trace" `
-                        -PublisherDisplayName "Trace Services Corporation"
+                        -PublisherDisplayName "WishEDA, Inc (Trace)"
 
     $priFilePath = Join-Path -Path $destRoot -ChildPath "priconfig.xml"
     #makepri createconfig /cf priconfig.xml /dq en-US

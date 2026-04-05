@@ -10,3 +10,6 @@ settings.json
 
 # vcpkg (auto-cloned during build if not configured)
 /vcpkg/
+
+# Environment secrets
+.env

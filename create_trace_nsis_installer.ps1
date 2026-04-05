@@ -15,6 +15,9 @@
 .PARAMETER Full
     Creates a full installer with all libraries (default behavior).
 
+.PARAMETER Diagnostic
+    Creates a diagnostic installer with release performance and debug logging enabled.
+
 .EXAMPLE
     .\create_trace_nsis_installer.ps1 -Rebuild -Lite
     Cleans build directories, rebuilds, and creates a lite installer.
@@ -26,6 +29,10 @@
 .EXAMPLE
     .\create_trace_nsis_installer.ps1 -Lite
     Creates a lite installer without cleaning/rebuilding.
+
+.EXAMPLE
+    .\create_trace_nsis_installer.ps1 -Rebuild -Full -Diagnostic
+    Creates a diagnostic installer with full libraries and debug logging.
 #>
 
 param(
@@ -36,7 +43,14 @@ param(
     [switch]$Lite,
 
     [Parameter(Mandatory=$false)]
-    [switch]$Full
+    [switch]$Full,
+
+    [Parameter(Mandatory=$false)]
+    [switch]$Diagnostic,
+
+    [Parameter(Mandatory=$false)]
+    [ValidateSet("x64", "arm64")]
+    [string]$Arch = "x64"
 )
 
 # Set strict error handling
@@ -46,9 +60,28 @@ $ErrorActionPreference = "Stop"
 # Paths are relative to script location for portability
 $script:TraceWinBuilderPath = $PSScriptRoot
 $script:TraceSourcePath = Join-Path (Split-Path -Parent $PSScriptRoot) "Trace"
-$script:Arch = "x64"
-$script:BuildType = "Release"
-$script:BuildConfigName = "trace-nightly"
+$script:Arch = $Arch
+
+# Load .env file from trace-win-builder if it exists
+$envFile = Join-Path $script:TraceWinBuilderPath ".env"
+if (Test-Path $envFile) {
+    Get-Content $envFile | ForEach-Object {
+        if ($_ -match '^\s*([^#][^=]+)=(.*)$') {
+            [System.Environment]::SetEnvironmentVariable($matches[1].Trim(), $matches[2].Trim(), 'Process')
+        }
+    }
+    Write-Host "Loaded environment from .env" -ForegroundColor DarkGray
+}
+
+# Configuration based on build type
+if ($Diagnostic) {
+    $script:BuildType = "RelWithDebInfo"
+    $script:BuildConfigName = "trace-diagnostic"
+    Write-Host "Building DIAGNOSTIC version (Release performance + debug logging)" -ForegroundColor Magenta
+} else {
+    $script:BuildType = "Release"
+    $script:BuildConfigName = "trace-nightly"
+}
 
 # Derived paths
 $script:BuildName = "$script:Arch-windows-$script:BuildType"
