@@ -121,7 +121,7 @@ LangString REMOVING_DOCS ${LANG_GERMAN} "Removing documentation..."
 LangString REMOVING_ENV_VARS ${LANG_GERMAN} "Removing environment variables..."
 LangString REMOVING_FILE_ASSOC ${LANG_GERMAN} "Removing file associations..."
 
-LangString UNINST_PREV_VERSION_PROMPT ${LANG_GERMAN} "A previous version of Trace ($R1) was found installed at:$\r$\n$R0$\r$\n$\r$\nIt will be uninstalled before continuing."
+LangString UNINST_PREV_VERSION_PROMPT ${LANG_GERMAN} "A previous version of Trace ($R1) was found at:$\r$\n$R0$\r$\n$\r$\nWould you like to uninstall it before continuing?"
 LangString UNINST_PREV_VERSION_FAILED ${LANG_GERMAN} "Failed to uninstall previous Trace version ($R1). You may need to remove it manually."
 LangString UNINST_PREV_VERSION_REMOVING ${LANG_GERMAN} "Removing previous Trace version..."
 

@@ -349,9 +349,9 @@ ${un}__upv_enum_loop:
     Goto ${un}__upv_enum_loop
   ${EndIf}
 
-  ; In interactive mode, inform the user about the removal
+  ; In interactive mode, ask the user if they want to uninstall the old version
   ${IfNot} ${Silent}
-    MessageBox MB_OK|MB_ICONINFORMATION|MB_TOPMOST $(UNINST_PREV_VERSION_PROMPT) /SD IDOK
+    MessageBox MB_YESNO|MB_ICONQUESTION|MB_TOPMOST $(UNINST_PREV_VERSION_PROMPT) /SD IDYES IDNO ${un}__upv_enum_loop
   ${EndIf}
 
   ; Run the old uninstaller.
@@ -359,11 +359,20 @@ ${un}__upv_enum_loop:
   ; the child process requires UAC elevation (see NsisMultiUser.nsh line 558).
   ; _?= prevents the uninstaller from copying itself to temp, which is the
   ; only way ExecShellWait can actually wait for it to finish.
-  ; Derive the mode flag from which hive we found the install in.
-  ${If} $R5 == "HKLM"
-    ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /allusers _?=$R0"
+  ; In interactive mode, omit /S so the user walks through the uninstall wizard.
+  ; In silent mode (CI), keep /S for automated uninstall.
+  ${If} ${Silent}
+    ${If} $R5 == "HKLM"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /allusers _?=$R0"
+    ${Else}
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /currentuser _?=$R0"
+    ${EndIf}
   ${Else}
-    ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /currentuser _?=$R0"
+    ${If} $R5 == "HKLM"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/allusers _?=$R0"
+    ${Else}
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/currentuser _?=$R0"
+    ${EndIf}
   ${EndIf}
 
   ; ExecShellWait doesn't return exit codes; if the uninstaller fails, we rely
