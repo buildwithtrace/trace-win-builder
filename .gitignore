@@ -10,3 +10,6 @@
 
 # Environment secrets
 .env
+
+# settings.json
+/settings.json

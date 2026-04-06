@@ -292,8 +292,6 @@ FunctionEnd
 	SetDetailsPrint none
 !macroend
 
-!macroend
-
 ; Macro to uninstall previous Trace versions before installing the new one.
 ; Enumerates the Windows Uninstall registry hive under both HKLM and HKCU,
 ; finds any existing Trace installations with a different version, and runs
