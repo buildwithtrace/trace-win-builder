@@ -593,6 +593,14 @@ function Build-Trace {
         $cmakeArgs += "-DAMPLITUDE_API_KEY=$($env:AMPLITUDE_API_KEY)";
     }
 
+    $traceVersionFile = Join-Path -Path (Get-Source-Path trace) -ChildPath "cmake\TraceVersion.cmake"
+    $versionMatch = Select-String -Path $traceVersionFile -Pattern 'TRACE_SEMANTIC_VERSION\s+"([^"]+)"' |
+        Select-Object -First 1
+    if ($versionMatch -and $versionMatch.Matches[0].Groups[1].Value -match '-beta$') {
+        Write-Host "Beta version detected, enabling backend URL override" -ForegroundColor Yellow
+        $cmakeArgs += '-DKICAD_BACKEND_URL_OVERRIDE=ON'
+    }
+
     if( $arch -ne [Arch]::arm64 ) {
         $cmakeArgs += '-DKICAD_SCRIPTING_WXPYTHON=ON';
     }
