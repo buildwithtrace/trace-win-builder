@@ -117,6 +117,9 @@ param(
     [Parameter(Mandatory=$False, ParameterSetName="preparepackage")]
     [switch]$Lite,
 
+    [Parameter(Mandatory=$False, ParameterSetName="build")]
+    [string]$TraceBackendUrl = "https://api.buildwithtrace.com/api/v3",
+
     [Parameter(Mandatory=$False, ParameterSetName="package")]
     [bool]$Prepare = $True,
 
@@ -591,6 +594,10 @@ function Build-Trace {
 
     if( $env:AMPLITUDE_API_KEY -ne $null -and $env:AMPLITUDE_API_KEY -ne "" ) {
         $cmakeArgs += "-DAMPLITUDE_API_KEY=$($env:AMPLITUDE_API_KEY)";
+    }
+
+    if( $TraceBackendUrl -ne "" ) {
+        $cmakeArgs += "-DTRACE_BACKEND_URL=$TraceBackendUrl";
     }
 
     $traceVersionFile = Join-Path -Path (Get-Source-Path trace) -ChildPath "cmake\TraceVersion.cmake"
