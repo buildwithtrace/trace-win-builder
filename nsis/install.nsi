@@ -359,29 +359,32 @@ ${un}__upv_enum_loop:
   ; the child process requires UAC elevation (see NsisMultiUser.nsh line 558).
   ; _?= prevents the uninstaller from copying itself to temp, which is the
   ; only way ExecShellWait can actually wait for it to finish.
-  ; In interactive mode, omit /S so the user walks through the uninstall wizard.
-  ; In silent mode (CI), keep /S for automated uninstall.
+  ; Pass /uninstall so the old uninstaller knows it was launched
+  ; programmatically and skips its shell-user relaunch logic (which would
+  ; Quit the process ExecShellWait is waiting on, causing a premature return
+  ; and an infinite re-prompt loop).
   ${If} ${Silent}
     ${If} $R5 == "HKLM"
-      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /allusers _?=$R0"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /uninstall /allusers _?=$R0"
     ${Else}
-      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /currentuser _?=$R0"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/S /uninstall /currentuser _?=$R0"
     ${EndIf}
   ${Else}
     ${If} $R5 == "HKLM"
-      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/allusers _?=$R0"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/uninstall /allusers _?=$R0"
     ${Else}
-      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/currentuser _?=$R0"
+      ExecShellWait "open" "$R0\${UNINSTALL_FILENAME}" "/uninstall /currentuser _?=$R0"
     ${EndIf}
   ${EndIf}
 
   ; ExecShellWait doesn't return exit codes; if the uninstaller fails, we rely
   ; on leftover-directory cleanup below as the fallback.
 
-  ; Clean up leftover install directory if the old uninstaller left it behind
-  ${If} ${FileExists} "$R0\*.*"
-    RMDir /r "$R0"
-  ${EndIf}
+  ; Clean up leftover install directory if the old uninstaller left it behind.
+  ; With _?= the uninstaller cannot delete itself, so uninstall.exe will
+  ; remain on disk.  Delete it explicitly, then remove the directory tree.
+  Delete "$R0\${UNINSTALL_FILENAME}"
+  RMDir /r "$R0"
 
   ; Registry changed after uninstall -- restart enumeration from 0
   StrCpy $R4 0
@@ -1070,7 +1073,7 @@ Function PreventMultiInstances
 FunctionEnd
 
 Function un.PreventMultiInstances
-  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-installer-${TRACE_VERSION}") i .r1 ?e'
+  System::Call 'kernel32::CreateMutexA(i 0, i 0, t "trace-uninstaller-${TRACE_VERSION}") i .r1 ?e'
   Pop $R0
   StrCmp $R0 0 +3
   MessageBox MB_OK|MB_ICONEXCLAMATION|MB_TOPMOST $(UNINSTALLER_RUNNING) /SD IDOK
