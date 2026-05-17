@@ -201,7 +201,7 @@ pipeline {
             }
             step([$class: 'Mailer',
                   notifyEveryUnstableBuild: true,
-                  recipients: "ci@buildwithtrace.com",
+                  recipients: "hello@buildwithtrace.com",
                   sendToIndividuals: false])
           }
         }
