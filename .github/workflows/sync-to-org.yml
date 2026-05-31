@@ -10,16 +10,12 @@ jobs:
     if: github.repository_owner == 'elcruzo'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          token: ${{ secrets.ORG_PUSH_TOKEN }}
-          persist-credentials: false
-          submodules: false
-
-      - name: Push to org repo
+      - name: Clone and push to org
         env:
           ORG_PUSH_TOKEN: ${{ secrets.ORG_PUSH_TOKEN }}
         run: |
+          git clone --no-checkout --filter=blob:none https://x-access-token:${ORG_PUSH_TOKEN}@github.com/elcruzo/trace-win-builder.git repo
+          cd repo
+          git checkout main
           git remote add org https://x-access-token:${ORG_PUSH_TOKEN}@github.com/buildwithtrace/win-builder.git
-          git push org HEAD:main --force
+          git push org main:main --force
