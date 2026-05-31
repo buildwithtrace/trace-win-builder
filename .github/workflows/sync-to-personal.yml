@@ -1,0 +1,26 @@
+# Syncs buildwithtrace/trace-win-builder → elcruzo/trace-win-builder on PR merge.
+# Local dual-push handles direct pushes from your machine.
+# This Action handles PR merges done via GitHub's web UI on the org repo.
+name: Sync to Personal
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    if: github.repository_owner == 'buildwithtrace'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ORG_PUSH_TOKEN }}
+          persist-credentials: false
+
+      - name: Push to personal repo
+        env:
+          ORG_PUSH_TOKEN: ${{ secrets.ORG_PUSH_TOKEN }}
+        run: |
+          git remote add personal https://x-access-token:${ORG_PUSH_TOKEN}@github.com/elcruzo/trace-win-builder.git
+          git push personal HEAD:main

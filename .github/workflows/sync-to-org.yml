@@ -15,6 +15,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.ORG_PUSH_TOKEN }}
           persist-credentials: false
+          submodules: false
 
       - name: Push to org repo
         env:
