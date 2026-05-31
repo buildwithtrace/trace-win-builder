@@ -1,0 +1,24 @@
+# Syncs elcruzo/trace-win-builder → buildwithtrace/win-builder on push to main.
+name: Sync to Organization
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  sync:
+    if: github.repository_owner == 'elcruzo'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.ORG_PUSH_TOKEN }}
+          persist-credentials: false
+
+      - name: Push to org repo
+        env:
+          ORG_PUSH_TOKEN: ${{ secrets.ORG_PUSH_TOKEN }}
+        run: |
+          git remote add org https://x-access-token:${ORG_PUSH_TOKEN}@github.com/buildwithtrace/win-builder.git
+          git push org HEAD:main --force
