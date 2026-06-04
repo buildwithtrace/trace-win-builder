@@ -1,0 +1,46 @@
+---
+description: Adversarial edge-case thinking is mandatory for EVERY code change
+alwaysApply: true
+---
+
+# Edge-Case Thinking (mandatory for every change)
+
+Happy-path code is half-done code. Before you finish ANY change, think like an
+attacker and a pessimist: enumerate how it breaks, then handle it. This applies
+to every file, every PR, every repo.
+
+## Run this on every change
+
+1. **Failure paths.** What if each external call (HTTP, DB, RPC, subprocess,
+   file I/O, IPC) fails, times out, or returns malformed/empty data? Every call
+   has a failure branch — handle it or deliberately document why not.
+2. **Partial / intermediate state.** If the operation dies halfway, what's left
+   behind? Did you commit/write/charge before the work succeeded? Order things so
+   a crash can't leave corrupt or half-applied state.
+3. **Concurrency & races.** Can two things run this at once? check-then-act and
+   read-modify-write are races unless atomic. Assume it runs twice simultaneously.
+4. **Idempotency / at-least-once.** Webhooks, retries, and re-sends happen. Will
+   a duplicate call double-apply? Dedup or make it idempotent.
+5. **Boundaries & bad input.** Empty, null, zero, negative, huge, unicode,
+   missing keys, wrong types, expired tokens, out-of-range indices. Validate at
+   the trust boundary; never assume a field exists or a value is in range.
+6. **Downstream consumers.** Who reads what you produce? Changing a field/event/
+   schema/response/API shape can silently break another service or client. Trace
+   the data to its consumers and keep them in sync.
+7. **Fail-open vs fail-closed — choose on purpose.** UX/availability paths may
+   fail open; security, auth, and paid features fail closed. State which.
+8. **Security & privilege.** Least privilege for every endpoint/route/token/key.
+   Never trust client-supplied identity or amounts. Secrets stay server-side and
+   out of client bundles, logs, and the repo.
+9. **Resource cleanup.** Temp files, locks, threads, processes, sockets, timers,
+   and listeners must be released on EVERY exit path (try/finally, RAII, effect
+   cleanup), including cancellation and unmount/disconnect.
+10. **Platform / version / environment.** Consider all target platforms,
+    versions, and environments (OS, browser, stale clients, missing env vars).
+
+## Definition of done
+
+Don't just write the code that makes the feature work — write the code that keeps
+it correct when inputs, timing, network, and users are hostile. If you spot an
+edge case you're not handling, handle it now or leave a `FIXME(edge):` explaining
+the risk and trigger.
