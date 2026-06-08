@@ -305,11 +305,42 @@ if( $BuildConfigName ) {
 $settings = Merge-HashTable -Default $settingDefault -Uppend $settingsSaved
 
 
-# Resolve the vcpkg path. An explicit VcpkgPath (settings.json / -Config) wins.
-# Otherwise fall back to the bundled ./vcpkg submodule so the build works without a
-# machine-specific absolute path baked into the (gitignored) settings.json. Without
-# this, an empty VcpkgPath makes the Join-Path calls below throw
-# "Cannot bind argument to parameter 'Path' because it is an empty string".
+# Allow environment variables to override settings so machine-specific / secret config
+# can be passed dynamically (via .env, which create_trace_nsis_installer.ps1 loads into
+# the process env, or via CI) instead of being committed to the gitignored settings.json.
+# Precedence for these: env var > settings.json > built-in default.
+$envSettingOverrides = [ordered]@{
+    'SentryDsn'            = 'TRACE_SENTRY_DSN'
+    'SignSubjectName'      = 'TRACE_SIGN_SUBJECT_NAME'
+    'VsVersionMin'         = 'TRACE_VS_VERSION_MIN'
+    'VsVersionMax'         = 'TRACE_VS_VERSION_MAX'
+    'VcpkgPlatformToolset' = 'TRACE_VCPKG_PLATFORM_TOOLSET'
+}
+foreach( $key in $envSettingOverrides.Keys ) {
+    $val = [System.Environment]::GetEnvironmentVariable($envSettingOverrides[$key])
+    if( -not [string]::IsNullOrWhiteSpace($val) ) {
+        $settings[$key] = $val
+        Write-Host "Overriding $key from `$env:$($envSettingOverrides[$key])" -ForegroundColor DarkGray
+    }
+}
+
+
+# Resolve the vcpkg path. Precedence: explicit VcpkgPath (settings.json / -Config) >
+# $env:TRACE_VCPKG_PATH > $env:VCPKG_ROOT > the bundled ./vcpkg submodule. The fallback
+# means the build works without a machine-specific absolute path baked into the
+# (gitignored) settings.json -- an empty VcpkgPath otherwise makes the Join-Path calls
+# below throw "Cannot bind argument to parameter 'Path' because it is an empty string".
+if( [string]::IsNullOrWhiteSpace($settings["VcpkgPath"]) ) {
+    foreach( $envName in @('TRACE_VCPKG_PATH', 'VCPKG_ROOT') ) {
+        $val = [System.Environment]::GetEnvironmentVariable($envName)
+        if( -not [string]::IsNullOrWhiteSpace($val) ) {
+            $settings["VcpkgPath"] = $val
+            Write-Host "Using VcpkgPath from `$env:$envName : $val" -ForegroundColor DarkGray
+            break
+        }
+    }
+}
+
 if( [string]::IsNullOrWhiteSpace($settings["VcpkgPath"]) ) {
     $settings["VcpkgPath"] = Join-Path -Path $PSScriptRoot -ChildPath "vcpkg"
     Write-Host "VcpkgPath not configured; defaulting to bundled submodule: $($settings["VcpkgPath"])" -ForegroundColor DarkYellow

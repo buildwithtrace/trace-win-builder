@@ -183,6 +183,26 @@ Available settings:
 | `SignSubjectName` | Code signing certificate name | `""` |
 | `SentryDsn` | Sentry error reporting DSN | `""` |
 
+> `settings.json` is gitignored — keep machine-specific paths and secrets out of git.
+
+### Environment overrides (`.env`)
+
+For machine-specific or secret config you'd rather not put in `settings.json`, set
+environment variables (or copy `.env.example` to `.env`, which the installer script loads
+automatically). These take precedence over `settings.json`:
+
+| Env var | Overrides |
+|---------|-----------|
+| `TRACE_VCPKG_PATH` / `VCPKG_ROOT` | `VcpkgPath` (then falls back to the bundled `./vcpkg` submodule) |
+| `TRACE_SENTRY_DSN` | `SentryDsn` |
+| `TRACE_SIGN_SUBJECT_NAME` | `SignSubjectName` |
+| `TRACE_VS_VERSION_MIN` / `TRACE_VS_VERSION_MAX` | VS version range |
+| `TRACE_VCPKG_PLATFORM_TOOLSET` | `VcpkgPlatformToolset` |
+| `AMPLITUDE_API_KEY` | Amplitude analytics key (read directly during build) |
+
+If `VcpkgPath` is unset everywhere, the build uses the bundled `./vcpkg` submodule
+(`git submodule update --init vcpkg`).
+
 ### Build Configurations
 
 Build configurations are stored in `build-configs/` as JSON files. The default is `trace-nightly.json`.
