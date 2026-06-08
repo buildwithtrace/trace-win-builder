@@ -1,7 +1,7 @@
 {
     "SignSubjectName": "WishEDA, Inc (Trace)",
     "SentryDsn": "",
-    "VcpkgPath": "C:\\Users\\alloj\\Documents\\projects\\Trace\\vcpkg",
+    "VcpkgPath": "",
     "UseMsvcCmake": false,
     "VsVersionMax": "17.99",
     "VcpkgPlatformToolset": "v142",
