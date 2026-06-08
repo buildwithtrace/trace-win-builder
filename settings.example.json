@@ -1,9 +1,0 @@
-{
-    "SignSubjectName": "WishEDA, Inc (Trace)",
-    "SentryDsn": "",
-    "VcpkgPath": "",
-    "UseMsvcCmake": false,
-    "VsVersionMax": "17.99",
-    "VcpkgPlatformToolset": "v142",
-    "VsVersionMin": "16.0"
-}
