@@ -305,6 +305,17 @@ if( $BuildConfigName ) {
 $settings = Merge-HashTable -Default $settingDefault -Uppend $settingsSaved
 
 
+# Resolve the vcpkg path. An explicit VcpkgPath (settings.json / -Config) wins.
+# Otherwise fall back to the bundled ./vcpkg submodule so the build works without a
+# machine-specific absolute path baked into the (gitignored) settings.json. Without
+# this, an empty VcpkgPath makes the Join-Path calls below throw
+# "Cannot bind argument to parameter 'Path' because it is an empty string".
+if( [string]::IsNullOrWhiteSpace($settings["VcpkgPath"]) ) {
+    $settings["VcpkgPath"] = Join-Path -Path $PSScriptRoot -ChildPath "vcpkg"
+    Write-Host "VcpkgPath not configured; defaulting to bundled submodule: $($settings["VcpkgPath"])" -ForegroundColor DarkYellow
+}
+
+
 # Set VCPKG Platform Toolset
 $env:VCPKG_PLATFORM_TOOLSET = $settings.VcpkgPlatformToolset
 
@@ -560,6 +571,12 @@ function Build-Trace {
     $installPath = Join-Path -Path $BuilderPaths.OutRoot -ChildPath "$buildName/"
     $toolchainPath = Join-Path -Path $settings["VcpkgPath"] -ChildPath "/scripts/buildsystems/vcpkg.cmake"
     $installPdbPath = Join-Path -Path $BuilderPaths.OutRoot -ChildPath "$buildName-pdb"
+
+    if( -not (Test-Path $toolchainPath) ) {
+        Write-Error "vcpkg toolchain not found at '$toolchainPath'. Initialize the bundled submodule with 'git submodule update --init vcpkg', or point at an existing checkout via '.\build.ps1 -Config -VcpkgPath ""<path-to-vcpkg>""'."
+        Pop-Location
+        Exit [ExitCodes]::ConfigError
+    }
 
     Write-Host "Starting build"
     Write-Host "arch: $arch"
