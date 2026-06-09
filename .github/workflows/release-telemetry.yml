@@ -1,0 +1,54 @@
+name: Release Telemetry
+
+# Emits a `desktop_release_built` PostHog event when a Windows desktop installer
+# release is cut. The actual installer build runs on Jenkins (Jenkinsfile, which
+# checks out source from GitLab) / local build.ps1, NOT on GitHub Actions, so
+# this workflow only records the release moment for analytics. It never
+# participates in a build and can never fail one.
+#
+# Fires on:
+#   - a published GitHub Release
+#   - a version tag push (v* / numeric)
+#   - manual dispatch (also lets you verify the POSTHOG_API_KEY secret)
+#
+# Requires repo secret POSTHOG_API_KEY (optional POSTHOG_HOST). If the secret is
+# unset the emit step is skipped, so the workflow is a harmless no-op until the
+# secret is configured.
+
+on:
+  release:
+    types: [published]
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version string to report (defaults to tag / run number)'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  telemetry:
+    runs-on: ubuntu-latest
+    env:
+      # Secrets cannot be referenced directly in `if:`; surface them as env vars.
+      POSTHOG_API_KEY: ${{ secrets.POSTHOG_API_KEY }}
+      POSTHOG_HOST: ${{ secrets.POSTHOG_HOST }}
+    steps:
+      - name: Emit desktop_release_built
+        if: ${{ env.POSTHOG_API_KEY != '' }}
+        continue-on-error: true
+        timeout-minutes: 1
+        run: |
+          set +e
+          RESOLVED_VERSION="${{ inputs.version || github.event.release.tag_name || github.ref_name }}"
+          if [ -z "$RESOLVED_VERSION" ]; then RESOLVED_VERSION="run-${{ github.run_number }}"; fi
+          curl -sS -m 10 "${POSTHOG_HOST:-https://us.i.posthog.com}/capture/" \
+            -H 'Content-Type: application/json' \
+            -d "{\"api_key\":\"${POSTHOG_API_KEY}\",\"event\":\"desktop_release_built\",\"distinct_id\":\"ci-${{ github.repository }}\",\"properties\":{\"platform\":\"windows\",\"version\":\"${RESOLVED_VERSION}\",\"repo\":\"${{ github.repository }}\",\"arch\":\"x64\",\"success\":true,\"run_id\":\"${{ github.run_id }}\",\"client\":\"ci\"}}" || true
+          echo "Emitted desktop_release_built (best-effort) for windows ${RESOLVED_VERSION}"
